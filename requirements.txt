@@ -1,6 +1,6 @@
-streamlit==1.35.0
-google-generativeai==0.5.4
-PyMuPDF==1.23.9
-langchain==0.1.14
-faiss-cpu==1.7.4
-sentence-transformers==2.6.1
+streamlit
+google-generativeai
+langchain
+chromadb
+sentence-transformers
+PyMuPDF
