@@ -1,11 +1,20 @@
+# import streamlit as st
+# import tempfile
+# import google.generativeai as genai
+# from langchain_community.embeddings import HuggingFaceEmbeddings
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain.vectorstores import Chroma
+# import fitz  # PyMuPDF
+# import os
+
+
 import streamlit as st
 import tempfile
 import google.generativeai as genai
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
 import fitz  # PyMuPDF
-import os
+from langchain.vectorstores import FAISS
 
 # --- Configure Google Gemini ---
 GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
@@ -29,11 +38,16 @@ def chunk_text(text):
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     return splitter.split_text(text)
 
-# --- Vector DB Creation with Chroma ---
+# # --- Vector DB Creation with Chroma ---
+# def create_vector_db(chunks):
+#     persist_directory = "./chroma_db"
+#     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+#     return Chroma.from_texts(chunks, embedding=embeddings, persist_directory=persist_directory)
+
+# Create FAISS vector DB
 def create_vector_db(chunks):
-    persist_directory = "./chroma_db"
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    return Chroma.from_texts(chunks, embedding=embeddings, persist_directory=persist_directory)
+    return FAISS.from_texts(chunks, embedding=embeddings)
 
 # --- Ask Question with Context ---
 def ask_question_with_context(vector_db, question):
