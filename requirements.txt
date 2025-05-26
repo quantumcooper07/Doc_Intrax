@@ -1,8 +1,9 @@
 streamlit
 PyMuPDF
 langchain
-faiss-cpu
 sentence-transformers
 google-generativeai
 tqdm
 python-dotenv
+faiss-cpu
+tiktoken
