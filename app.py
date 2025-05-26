@@ -9,7 +9,6 @@ import os
 
 
 # Initialize Gemini
-GEMINI_API_KEY = "AIzaSyBVcNicvBrN18eUxxJJ-wH8PfiXIgoA-PE"
 genai.configure(api_key=GEMINI_API_KEY)
 GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
 
