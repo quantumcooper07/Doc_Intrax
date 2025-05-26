@@ -1,10 +1,12 @@
 import streamlit as st
 import tempfile
 import google.generativeai as genai
-from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import fitz  # PyMuPDF
+from langchain.vectorstores import Chroma
+import os
+
 
 # Initialize Gemini
 GEMINI_API_KEY = "AIzaSyBVcNicvBrN18eUxxJJ-wH8PfiXIgoA-PE"
@@ -28,10 +30,12 @@ def chunk_text(text):
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     return splitter.split_text(text)
 
-# Vector DB
+#Create Vector DB
 def create_vector_db(chunks):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    return FAISS.from_texts(chunks, embedding=embeddings)
+    persist_directory = "./chroma_db"
+    return Chroma.from_texts(chunks, embedding=embeddings, persist_directory=persist_directory)
+
 
 # Ask question using Gemini with retrieved context
 def ask_question_with_context(vector_db, question):
