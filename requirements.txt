@@ -1,29 +1,8 @@
-# Web app framework
 streamlit
-
-# PDF parsing
-PyMuPDF==1.22.5          # For extracting text from PDFs (fitz)
-pdfminer.six==20221105   # Optional: Better control for PDF parsing
-
-# LangChain & vector database support
-langchain==0.1.14        # Stable version compatible with FAISS
-faiss-cpu==1.7.4         # For storing and searching vector embeddings
-
-# Embeddings & LLMs
-openai                   # For using OpenAI embeddings / LLMs
-tiktoken                 # Tokenizer used by OpenAI
-
-# Google Gemini
-google-generativeai==0.3.2  # Use latest working version of Gemini API
-
-# Misc utilities
-python-dotenv            # For environment variable management
-pandas                   # For tabular processing if needed
-requests                 # For external API calls
-numpy                   # Base dependency for FAISS and others
-
-# Optional: Streamlit extras
-streamlit-extras         # Useful for add-ons like code expanders, buttons, etc.
-
-# Version pinning for stability
-typing-extensions==4.7.1
+PyMuPDF==1.22.5
+google-generativeai
+langchain
+chromadb
+sentence-transformers
+torch
+transformers
