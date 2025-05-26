@@ -1,6 +1,7 @@
 streamlit
 google-generativeai
 langchain
-chromadb
+langchain-community
+faiss-cpu
 sentence-transformers
 PyMuPDF
