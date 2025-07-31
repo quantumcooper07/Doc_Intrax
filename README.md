@@ -1,2 +1,1 @@
-to try visit 
-docintrax.streamlit.app
+[To try visit:](docintrax.streamlit.app)
