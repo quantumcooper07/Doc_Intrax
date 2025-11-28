@@ -12,7 +12,7 @@ import streamlit as st
 import tempfile
 import google.generativeai as genai
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitter import RecursiveCharacterTextSplitter
 import fitz  # PyMuPDF
 from langchain.vectorstores import FAISS
 
