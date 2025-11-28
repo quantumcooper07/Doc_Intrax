@@ -1,29 +1,23 @@
-# import streamlit as st
-# import tempfile
-# import google.generativeai as genai
-# from langchain_community.embeddings import HuggingFaceEmbeddings
-# from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain.vectorstores import Chroma
-# import fitz  # PyMuPDF
-# import os
-
-
 import streamlit as st
 import tempfile
 import google.generativeai as genai
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_text_splitter import RecursiveCharacterTextSplitter
+# Using the standard import which maps to the installed splitter package
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 import fitz  # PyMuPDF
-# from langchain.vectorstores import FAISS
 from langchain_community.vectorstores import FAISS
+import os
 
 # --- Configure Google Gemini ---
-GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-genai.configure(api_key=GEMINI_API_KEY)
+if "GEMINI_API_KEY" in st.secrets:
+    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=GEMINI_API_KEY)
+else:
+    st.error("Missing GEMINI_API_KEY in secrets.")
 
 # --- Gemini Wrapper ---
 def ask_gemini(prompt):
-    model = genai.GenerativeModel("models/gemini-2.0-flash")
+    model = genai.GenerativeModel("models/gemini-1.5-flash")
     response = model.generate_content(prompt)
     return response.text
 
@@ -39,30 +33,29 @@ def chunk_text(text):
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     return splitter.split_text(text)
 
-# # --- Vector DB Creation with Chroma ---
-# def create_vector_db(chunks):
-#     persist_directory = "./chroma_db"
-#     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-#     return Chroma.from_texts(chunks, embedding=embeddings, persist_directory=persist_directory)
+# --- Vector DB Creation ---
+# caching this prevents reloading the model unnecessarily
+@st.cache_resource
+def get_embedding_model():
+    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-# Create FAISS vector DB
 def create_vector_db(chunks):
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = get_embedding_model()
     return FAISS.from_texts(chunks, embedding=embeddings)
 
-# --- Ask Question with Context ---
+# --- Ask Question ---
 def ask_question_with_context(vector_db, question):
     docs = vector_db.similarity_search(question, k=3)
     context = "\n\n".join([doc.page_content for doc in docs])
     prompt = f"""
-Use the following context to answer the question:
+    Use the following context to answer the question:
 
-Context:
-{context}
+    Context:
+    {context}
 
-Question:
-{question}
-"""
+    Question:
+    {question}
+    """
     return ask_gemini(prompt)
 
 # --- Streamlit App UI ---
@@ -72,23 +65,30 @@ st.title("Ask Questions About Your PDF using Google Gemini")
 uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
 if uploaded_file is not None:
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-        tmp.write(uploaded_file.read())
-        tmp_path = tmp.name
+    # Logic to prevent re-processing the same file on every interaction
+    if "last_uploaded" not in st.session_state or st.session_state.last_uploaded != uploaded_file.name:
+        
+        with st.spinner("Processing PDF... (this may take a moment)"):
+            # Save uploaded file to a temporary file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                tmp.write(uploaded_file.read())
+                tmp_path = tmp.name
 
-    st.info("Processing PDF...")
-
-    try:
-        full_text, page_texts = load_pdf(tmp_path)
-        chunks = chunk_text(full_text)
-
-        st.success(f"PDF processed: {len(page_texts)} pages, {len(chunks)} chunks")
-
-        st.session_state["page_texts"] = page_texts
-        st.session_state["vector_db"] = create_vector_db(chunks)
-
-    except Exception as e:
-        st.error(f"Failed to process PDF: {str(e)}")
+            try:
+                full_text, page_texts = load_pdf(tmp_path)
+                chunks = chunk_text(full_text)
+                
+                # Store the Vector DB in session state
+                st.session_state["vector_db"] = create_vector_db(chunks)
+                st.session_state["last_uploaded"] = uploaded_file.name
+                
+                st.success(f"PDF processed: {len(page_texts)} pages, {len(chunks)} chunks")
+                
+            except Exception as e:
+                st.error(f"Failed to process PDF: {str(e)}")
+            finally:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
 
 # --- Question Input ---
 if "vector_db" in st.session_state:
@@ -99,7 +99,6 @@ if "vector_db" in st.session_state:
         with st.spinner("Thinking..."):
             try:
                 answer = ask_question_with_context(st.session_state["vector_db"], query)
-                st.success("Answer:")
-                st.write(answer)
+                st.markdown(f"**Answer:**\n{answer}")
             except Exception as e:
                 st.error(f"Error during response: {str(e)}")
