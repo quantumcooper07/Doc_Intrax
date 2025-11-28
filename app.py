@@ -3,7 +3,7 @@ import tempfile
 import google.generativeai as genai
 from langchain_community.embeddings import HuggingFaceEmbeddings
 # Using the standard import which maps to the installed splitter package
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import fitz  # PyMuPDF
 from langchain_community.vectorstores import FAISS
 import os
