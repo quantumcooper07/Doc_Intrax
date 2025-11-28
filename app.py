@@ -14,7 +14,8 @@ import google.generativeai as genai
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_text_splitter import RecursiveCharacterTextSplitter
 import fitz  # PyMuPDF
-from langchain.vectorstores import FAISS
+# from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 
 # --- Configure Google Gemini ---
 GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
